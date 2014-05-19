@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 
 namespace SimDisplay {
     class SimConnectInstance {
-        static public string AssemblyLoadDirectory {
+        string AssemblyLoadDirectory {
             get {
                 return AppDomain.CurrentDomain.BaseDirectory;
             }
@@ -67,7 +67,6 @@ namespace SimDisplay {
             sc.OnRecvException += new SimConnect.RecvExceptionEventHandler(sc_OnRecvException);
             sc.OnRecvQuit += new SimConnect.RecvQuitEventHandler(sc_OnRecvQuit);
 
-            sc.OnRecvReservedKey += sc_OnRecvReservedKey;
             sc.OnRecvAssignedObjectId += sc_OnRecvAssignedObjectId;
 
             // Write info
@@ -157,10 +156,6 @@ namespace SimDisplay {
         void sc_OnRecvQuit(SimConnect sender, SIMCONNECT_RECV data) {
             AddOutput("OnRecvQuit\tSimulator has closed.");
             Disconnect();
-        }
-
-        void sc_OnRecvReservedKey(SimConnect sender, SIMCONNECT_RECV_RESERVED_KEY data) {
-            AddOutput("Key reserved: " + data.szReservedKey);
         }
 
         void sc_OnRecvAssignedObjectId(SimConnect sender, SIMCONNECT_RECV_ASSIGNED_OBJECT_ID data) {
