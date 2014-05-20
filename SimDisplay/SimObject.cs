@@ -7,12 +7,35 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace SimDisplay {
+    public enum LoadTypes {
+        Immediate,
+        Conditional
+    }
+
+    public struct Waypoint {
+        [XmlAttribute(AttributeName = "Altitude")]
+        public double Altitude;
+        [XmlAttribute(AttributeName = "Flags")]
+        public SIMCONNECT_WAYPOINT_FLAGS Flags;
+        [XmlAttribute(AttributeName = "Latitude")]
+        public double Latitude;
+        [XmlAttribute(AttributeName = "Longitude")]
+        public double Longitude;
+        [XmlAttribute(AttributeName = "SpeedOrThrottle")]
+        public double SpeedOrThrottle;
+
+        public Waypoint(double Latitude, double Longitude, double Altitude, SIMCONNECT_WAYPOINT_FLAGS Flags, double SpeedOrThrottle) {
+            this.Altitude = Altitude;
+            this.Flags = Flags;
+            this.Latitude = Latitude;
+            this.Longitude = Longitude;
+            this.SpeedOrThrottle = SpeedOrThrottle;
+        }
+    }
+
     public class SimObject {
         [XmlIgnore()]
-        private uint ObjectId;
-
-        [XmlIgnore()]
-        private SimConnectInstance sci;
+        public uint ObjectId = 0;
 
         [XmlAttribute(AttributeName = "Title")]
         public string Title;
@@ -44,13 +67,14 @@ namespace SimDisplay {
         [XmlAttribute(AttributeName = "SimDisabled")]
         public bool SimDisabled;
 
-        public List<SIMCONNECT_DATA_WAYPOINT> Waypoints { get; set; }
+        [XmlAttribute(AttributeName = "LoadType")]
+        public LoadTypes LoadType;
 
-        public SimObject() {
-            sci = SimConnectInstance.Instance;
-        }
+        public List<Waypoint> WaypointList;
 
-        public SimObject(string title, double latitude, double longitude, double altitude, double pitch, double bank, double heading, bool onGround, uint airspeed, bool simDisabled = false)
+        public SimObject() { }
+
+        public SimObject(string title, double latitude, double longitude, double altitude, double pitch, double bank, double heading, bool onGround, uint airspeed, bool simDisabled = false, LoadTypes loadType = LoadTypes.Immediate)
             : this() {
             this.Title = title;
             this.Latitude = latitude;
@@ -62,30 +86,7 @@ namespace SimDisplay {
             this.OnGround = onGround;
             this.Airspeed = airspeed;
             this.SimDisabled = simDisabled;
-        }
-
-        public void CreateSimulatedObject() {
-            if (ObjectId == 0) {
-                sci.AICreateSimulatedObject(Title, Latitude, Longitude, Altitude, Pitch, Bank, Heading, OnGround, Airspeed);
-            }
-        }
-
-        public void RemoveObject() {
-            if (ObjectId != 0) {
-                sci.AIRemoveObject(ObjectId);
-            }
-        }
-
-        public void SetWaypoints() {
-            if (ObjectId == 0 && Waypoints != null) {
-                sci.SetDataOnSimObject(ObjectId, Waypoints);
-            }
-        }
-
-        public void ReleaseControl() {
-            if (ObjectId != 0) {
-                sci.AIReleaseControl(ObjectId);
-            }
+            this.LoadType = loadType;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BeatlesBlog.SimConnect;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,6 +57,7 @@ namespace SimDisplay {
                     Initialize(System.IO.Path.Combine(AssemblyLoadDirectory, settingsFilename));
                 }
             }
+            // else if(uri is valid && site can connected){call initialize, add if statement there to load from website} add condition for xml file on website
             else {
                 // otherwise it's a full path
                 if (InvalidPathChars(settingsFilename)) {
@@ -89,27 +91,56 @@ namespace SimDisplay {
             else {
                 // create and save settings if no file exists
                 s = new Settings();
-                s.Objects.Add(new SimObject("veh_carrier01_high_detail_sm", 37.793322, -122.335726, 0, 0, 0, 0, true, 0));
-                s.Objects.Add(new SimObject("VEH_water_yacht_280ft_sm", 37.787659, -122.333902, 0, 0, 0, 0, true, 0));
-                s.Objects.Add(new SimObject("VEH_Air_PickupUS_Grey_sm", 37.790607, -122.330697, 0, 0, 0, 0, true, 0));
-                s.Objects.Add(new SimObject("Discovery Spaceshuttle", 37.790486, -122.328211, 0, 0, 0, 0, true, 0));
-                s.Objects.Add(new SimObject("Robinson R22", 37.790314, -122.330437, 0, 0, 0, 0, true, 0));
-                s.Objects.Add(new SimObject("ANI_GiraffeWalk_Mature_sm", 37.790338, -122.329498, 0, 0, 0, 0, true, 0));
-                s.Objects.Add(new SimObject("Cessna Skyhawk 172SP Paint1", 37.790615, -122.330056, 0, 0, 0, 0, true, 0));
+                s.Objects.Add(new SimObject("veh_carrier01_high_detail_sm", 37.793322, -122.335726, 0, 0, 0, 0, true, 0, false, LoadTypes.Immediate));
+                s.Objects.Add(new SimObject("VEH_water_yacht_280ft_sm", 37.787659, -122.333902, 0, 0, 0, 0, true, 0, false, LoadTypes.Immediate));
+                s.Objects.Add(new SimObject("VEH_Air_PickupUS_Grey_sm", 37.790607, -122.330697, 0, 0, 0, 0, true, 0, false, LoadTypes.Immediate));
+                s.Objects.Add(new SimObject("Discovery Spaceshuttle", 37.790486, -122.328211, 0, 0, 0, 0, true, 0, false, LoadTypes.Immediate));
+                s.Objects.Add(new SimObject("Robinson R22", 37.790314, -122.330437, 0, 0, 0, 0, true, 0, false, LoadTypes.Immediate));
+                s.Objects.Add(new SimObject("ANI_GiraffeWalk_Mature_sm", 37.790338, -122.329498, 0, 0, 0, 0, true, 0, false, LoadTypes.Immediate));
+                s.Objects.Add(new SimObject("Cessna Skyhawk 172SP Paint1", 37.790615, -122.330056, 0, 0, 0, 0, true, 0, false, LoadTypes.Immediate));
+
+                s.Objects[0].WaypointList = new List<Waypoint>();
+                s.Objects[0].WaypointList.Add(new Waypoint(
+                    37.805422,
+                    -122.353511,
+                    0,
+                    SIMCONNECT_WAYPOINT_FLAGS.ALTITUDE_IS_AGL | SIMCONNECT_WAYPOINT_FLAGS.ON_GROUND | SIMCONNECT_WAYPOINT_FLAGS.SPEED_REQUESTED,
+                    30
+                    ));
+
+                s.Objects[0].WaypointList.Add(new Waypoint(
+                    37.847885,
+                    -122.354810,
+                    0,
+                    SIMCONNECT_WAYPOINT_FLAGS.ALTITUDE_IS_AGL | SIMCONNECT_WAYPOINT_FLAGS.ON_GROUND | SIMCONNECT_WAYPOINT_FLAGS.SPEED_REQUESTED,
+                    30
+                    ));
+
+                s.Objects[0].WaypointList.Add(new Waypoint(
+                    37.832973, -122.401158,
+                    0,
+                    SIMCONNECT_WAYPOINT_FLAGS.ALTITUDE_IS_AGL | SIMCONNECT_WAYPOINT_FLAGS.ON_GROUND | SIMCONNECT_WAYPOINT_FLAGS.SPEED_REQUESTED,
+                    30
+                    ));
+
+                s.Objects[0].WaypointList.Add(new Waypoint(
+                    37.781164, -122.365796,
+                    0,
+                    SIMCONNECT_WAYPOINT_FLAGS.ALTITUDE_IS_AGL | SIMCONNECT_WAYPOINT_FLAGS.ON_GROUND | SIMCONNECT_WAYPOINT_FLAGS.SPEED_REQUESTED,
+                    30
+                    ));
+
                 using (System.IO.Stream writer = new System.IO.FileStream(settingsFilePath, System.IO.FileMode.Create)) {
                     serializer.Serialize(writer, s);
                 }
             }
 
-            // connect to SimConnect
-            SimConnectInstance.Instance.Connect();
-
-            // wait for SimConnect to connect
-            while (!SimConnectInstance.Instance.IsConnected) { }
-
-            // create all objects
-            foreach (SimObject obj in s.Objects) {
-                obj.CreateSimulatedObject();
+            // create objects that should be loaded immediately
+            SimConnectInstance sc = SimConnectInstance.Instance;
+            if (sc.Connected) {
+                foreach (SimObject obj in s.Objects.Where(x => x.LoadType == LoadTypes.Immediate)) {
+                    sc.AICreateSimulatedObject(obj);
+                }
             }
         }
     }

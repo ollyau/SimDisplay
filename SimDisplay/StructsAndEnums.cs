@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SimDisplay {
     [DataStruct()]
-    public struct SimDataStruct1 {
+    public struct SimDisabledStruct {
         [DataItem("SIM DISABLED", "Bool")]
         public bool SimDisabled;
     }
@@ -16,8 +16,8 @@ namespace SimDisplay {
         DisplayText,
         AIRemove,
         AIRelease,
-        AICreate = 0x01000000,
-        AIRequest = 0x02000000
+        AICreateBase = 0x01000000,
+        AIRequestBase = 0x02000000
     }
 
     enum Events {
